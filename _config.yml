@@ -1,0 +1,5 @@
+name: amos
+author: amos
+theme: default
+source_dir: source
+output_dir: output

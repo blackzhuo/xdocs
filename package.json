@@ -1,0 +1,39 @@
+{
+  "name": "xdocs",
+  "version": "0.0.1",
+  "description": "xdocs can help generate blog posts",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wuzhuo0425/xdocs.git"
+  },
+  "bin": {
+    "xdocs": "./bin/xdocs-build.js"
+  },
+  "keywords": [
+    "doc",
+    "docs",
+    "documents"
+  ],
+  "dependencies": {
+    "colors": "^1.1.2",
+    "connect": "^2.7.11",
+    "fs-extra": "1.x",
+    "highlight.js": "^9.8.0",
+    "js-yaml": "^3.6.1",
+    "lodash": "^4.16.2",
+    "markdown-it": "^8.0.0",
+    "markdown-it-toc-and-anchor": "^4.1.1",
+    "walk-sync": "^0.3.1",
+    "yargs": "^6.5.0"
+  },
+  "author": "Wu Zhuo",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/wuzhuo0425/xdocs/issues"
+  },
+  "homepage": "https://github.com/wuzhuo0425/xdocs#readme"
+}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="./favicon.ico">
+    <title><%= current_path === '/' ? '' : page_title + ' - ' %><%= name %></title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="<%= relative_root_path %>src/css/index.css">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item active" href="<%= relative_root_path %>index.html">
+            <%= name %>
+          </a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="blog-header">
+        <h1 class="blog-title"><%= page_title %></h1>
+        <p class="lead blog-description"></p>
+      </div>
+      <div class="row">
+        <div class="col-sm-12 blog-main">
+          <div class="blog-post">
+            <%= content %>
+            <% if (current_path === '/') { %>
+              <%= chapterList %>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="blog-footer">
+      <p>
+        © 2017
+        <a href="<%= relative_root_path %>index.html" title="<%= author %>"><%= author %></a>
+        Build by
+        <a href="https://github.com/wuzhuo0425/xdocs" target="_blank">xdocs</a>
+      </p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="<%= relative_root_path %>src/js/index.js"></script>
+  </body>
+</html>
