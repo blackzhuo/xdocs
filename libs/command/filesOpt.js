@@ -2,6 +2,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const _ = require('lodash');
 const walkSync = require('walk-sync');
+const log = require('./log');
 
 function readTemplate(options, dest) {
     const pageTemplate = fs.readFileSync(path.resolve(dest, 'index.template'), 'utf8');
@@ -10,7 +11,7 @@ function readTemplate(options, dest) {
     options.templates.index = _.template(options.templates.index);
     return options;
 }
-let FilesOpt = {
+let filesOpt = {
     init: function(options) {
         let goalDirPath = path.resolve(process.cwd(), 'source')
         if (fs.existsSync(goalDirPath)) {} else {
@@ -33,7 +34,7 @@ let FilesOpt = {
         fs.removeSync(path.resolve(process.cwd(), options.output_dir));
         return options;
     },
-    copy: function(options) {
+    theme: function(options) {
         fs.copySync(path.resolve(process.cwd(), 'themes', 'default'), path.resolve(process.cwd(), options.output_dir), {
             filter(file) {
                 return !/\.template$/.test(file);
@@ -46,12 +47,12 @@ let FilesOpt = {
         }
         return options;
     },
-    theme: function(options) {
-        let theme_src = require(path.resolve(__dirname, '../../themes', options.theme));
+    template: function(options) {
+        let theme_src = path.resolve(__dirname, '../../themes', options.theme, `layout`);
         let theme_dest = path.resolve(process.cwd(), 'themes', options.theme);
         fs.copySync(theme_src, theme_dest);
         options = readTemplate(options, theme_dest);
         return options;
     }
 }
-module.exports = FilesOpt;
+module.exports = filesOpt;

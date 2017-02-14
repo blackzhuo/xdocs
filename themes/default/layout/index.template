@@ -4,10 +4,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="keywords" content="<%= page_title %>">
+    <meta name="description" content="<%= page_title %>">
+    <meta name="author" content="<%= author %>">
     <link rel="icon" href="./favicon.ico">
-    <title><%= current_path === '/' ? '' : page_title + ' - ' %><%= name %></title>
+    <title><%= current_path === '/' ? '' : page_title + ' | ' %><%= name %></title>
     <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="<%= relative_root_path %>src/css/index.css">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -45,16 +46,12 @@
         </div>
       </div>
     </div>
-
     <footer class="blog-footer">
       <p>
         © 2017
         <a href="<%= relative_root_path %>index.html" title="<%= author %>"><%= author %></a>
         Build by
         <a href="https://github.com/wuzhuo0425/xdocs" target="_blank">xdocs</a>
-      </p>
-      <p>
-        <a href="#">Back to top</a>
       </p>
     </footer>
     <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>

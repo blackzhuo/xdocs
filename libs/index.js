@@ -1,25 +1,42 @@
 'use strict';
-const path = require('path');
 const http = require('http');
+const path = require('path');
 const connect = require('connect');
-const getConfig = require('./command/config');
-const FilesOpt = require('./command/init');
-const posts = require('./command/posts');
-const page = require('./command/page');
+const log = require('./command/log');
+const getConfig = require('./command/getConfig');
+const filesOpt = require('./command/filesOpt');
+const makePosts = require('./command/makePosts');
+const makePage = require('./command/makePage');
+
 let xdocs = {
     build: function(options) {
-        options = getConfig(options);
-        options = FilesOpt.init(options);
-        options = FilesOpt.theme(options);
-        options = FilesOpt.clean(options);
-        options = FilesOpt.copy(options);
-        options = posts(options);
-        options = page(options);
+        log.success('[XDOCS] build start');
+        options = getConfig.init(options);
+        options = filesOpt.init(options);
+        options = filesOpt.template(options);
+        options = filesOpt.clean(options);
+        options = filesOpt.theme(options);
+        options = makePosts.init(options);
+        options = makePage.init(options);
+        log.success('[XDOCS] build end');
         return options;
+    },
+    clean: function(options){
+        log.success('[XDOCS] clean start');
+        options = getConfig.init(options);
+         options = filesOpt.clean(options);
+         log.success('[XDOCS] clean end');
+         return options;
+    },
+    deploy: function(options){
+        log.success('[XDOCS] deploy start');
+        options = getConfig.init(options);
+        log.success('[XDOCS] deploy end');
+         return options;
     },
     server: function() {
         var port = 8998;
-        var options = FilesOpt.config();
+        var options = filesOpt.config();
         var app = connect().use(connect.logger('tiny')).use(connect.query()).use(connect.bodyParser()).use(connect["static"](path.resolve(process.cwd(), options.output), {
             hidden: true,
             redirect: true,
@@ -28,13 +45,13 @@ let xdocs = {
         var server = http.createServer(app);
         server.listen(port);
         server.on("listening", function(e) {
-            console.log("blog server 运行成功, 端口为 " + port + ".");
-            return console.log("按 Ctrl + C 结束进程.");
+            return log.success("'[XDOCS] server start port " + port + ".");
         });
     },
     version: function() {
+        log.success('[XDOCS] version info');
         const info = require(path.join(__dirname, '../package.json'));
-        console.log(info.version);
+         log.info(info.version);
         process.exit(0);
     }
 }

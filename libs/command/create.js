@@ -2,20 +2,21 @@
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs-extra');
+const log = require('./log');
+const hljs = require('highlight.js');
 const markdownIt = require('markdown-it');
 const markdownItTocAndAnchor = require('markdown-it-toc-and-anchor').default;
-const hljs = require('highlight.js');
 
-function makeContent(root, pageOption) {
+function makeContent(root, options) {
     if (root[root.length - 1] !== '/') {
-        const filePath = path.resolve(process.cwd(), pageOption.source_dir, root);
-        pageOption.content = fs.readFileSync(filePath, 'utf8');
-        return pageOption;
+        const filePath = path.resolve(process.cwd(), options.source_dir, root);
+        options.content = fs.readFileSync(filePath, 'utf8');
+        return options;
     }
-    if (fs.existsSync(path.resolve(process.cwd(), pageOption.source_dir, root, 'index.md'))) {
-        pageOption.content = fs.readFileSync(path.posix.resolve(process.cwd(), pageOption.source_dir, root, 'index.md'), 'utf8');
+    if (fs.existsSync(path.resolve(process.cwd(), options.source_dir, root, 'index.md'))) {
+        options.content = fs.readFileSync(path.posix.resolve(process.cwd(), options.source_dir, root, 'index.md'), 'utf8');
     } else {
-        const chapters = pageOption.posts.filter(p => Object.keys(p)[0].indexOf(root) === 0).filter((p) => {
+        const chapters = options.posts.filter(p => Object.keys(p)[0].indexOf(root) === 0).filter((p) => {
             const pathArr = path.posix.relative(root, Object.keys(p)[0]).split('/');
             if (pathArr.length > 1) return false;
             if (pathArr[0] === '') return false;
@@ -35,74 +36,74 @@ function makeContent(root, pageOption) {
             contentStr += '- [' + pageName + ']';
             contentStr += '(' + pageHtml + ')\n';
         });
-        pageOption.content = contentStr;
+        options.content = contentStr;
     }
-    return pageOption;
+    return options;
 }
 
-function findRootPosition(root, pageOption) {
-    for (let i = 0; i < pageOption.posts.length; i += 1) {
-        if (pageOption.posts[i][root]) {
+function findRootPosition(root, options) {
+    for (let i = 0; i < options.posts.length; i += 1) {
+        if (options.posts[i][root]) {
             return i;
         }
     }
 }
 
-function createPageTitle(root, pageOption) {
+function createPageTitle(root, options) {
     if (root.substr(-3).toLowerCase() === '.md') {
-        if (pageOption.content) {
-            const contentArr = pageOption.content.split('\n');
+        if (options.content) {
+            const contentArr = options.content.split('\n');
             const hasTitle = /^#\s*(.*)\s*$/.exec(contentArr[0]);
             if (hasTitle) {
-                pageOption.page_title = hasTitle[1];
+                options.page_title = hasTitle[1];
                 contentArr.shift();
-                pageOption.content = contentArr.join('\n');
+                options.content = contentArr.join('\n');
             } else {
-                const position = findRootPosition(root, pageOption);
-                pageOption.page_title = pageOption.posts[position][root];
+                const position = findRootPosition(root, options);
+                options.page_title = options.posts[position][root];
             }
         } else {
-            const position = findRootPosition(root, pageOption);
-            pageOption.page_title = pageOption.posts[position][root];
+            const position = findRootPosition(root, options);
+            options.page_title = options.posts[position][root];
         }
-        return pageOption;
+        return options;
     }
     if (root[root.length - 1] === '/' && root !== '/') {
-        const contentArr = pageOption.content.split('\n');
+        const contentArr = options.content.split('\n');
         const hasTitle = /^#\s*(.*)$/.exec(contentArr[0]);
         if (hasTitle) {
-            pageOption.page_title = hasTitle[1];
+            options.page_title = hasTitle[1];
             contentArr.shift();
-            pageOption.content = contentArr.join('\n');
+            options.content = contentArr.join('\n');
         } else {
-            const position = findRootPosition(root, pageOption);
-            pageOption.page_title = pageOption.posts[position][root];
+            const position = findRootPosition(root, options);
+            options.page_title = options.posts[position][root];
         }
-        return pageOption;
+        return options;
     }
     if (root === '/') {
-        if (pageOption.content !== '') {
-            const contentArr = pageOption.content.split('\n');
+        if (options.content !== '') {
+            const contentArr = options.content.split('\n');
             const hasTitle = /^#\s*(.*)$/.exec(contentArr[0]);
             if (hasTitle) {
-                pageOption.page_title = hasTitle[1];
+                options.page_title = hasTitle[1];
                 contentArr.shift();
-                pageOption.content = contentArr.join('\n');
+                options.content = contentArr.join('\n');
             } else {
-                pageOption.page_title = pageOption.site;
+                options.page_title = options.site;
             }
         } else {
-            pageOption.page_title = pageOption.site;
+            options.page_title = options.site;
         }
-        return pageOption;
+        return options;
     }
-    pageOption.page_title = pageOption.site;
-    return pageOption;
+    options.page_title = options.site;
+    return options;
 }
 
-function makeChapterList(root, pageOption) {
-    let chapterArr = pageOption.posts;
-    if (!pageOption.posts) {
+function makeChapterList(root, options) {
+    let chapterArr = options.posts;
+    if (!options.posts) {
         chapterArr = [];
     }
     let str = '<ul>';
@@ -134,7 +135,7 @@ function makeChapterList(root, pageOption) {
             }
         }
         str += '<li>';
-        str += '<a href="' + pageOption.relative_root_path + chapterPath + '">' + c[Object.keys(c)[0]] + '</a>';
+        str += '<a href="' + options.relative_root_path + chapterPath + '">' + c[Object.keys(c)[0]] + '</a>';
         if (isFirstLevelDir) {
             str += '<a><span></span></a>';
         }
@@ -152,11 +153,11 @@ function makeChapterList(root, pageOption) {
         current_level = level;
     });
     str += '</ul>';
-    pageOption.chapterList = str;
-    return pageOption;
+    options.chapterList = str;
+    return options;
 }
 
-function markdownRender(root, pageOption) {
+function markdownRender(root, options) {
     function highlight(str, lang) {
         if (lang && hljs.getLanguage(lang)) {
             try {
@@ -167,7 +168,7 @@ function markdownRender(root, pageOption) {
         }
         return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
     }
-    pageOption.toc = '';
+    options.toc = '';
     const md = markdownIt({
         html: true,
         linkify: true,
@@ -177,15 +178,15 @@ function markdownRender(root, pageOption) {
         tocLastLevel: 3,
         anchorLinkBefore: false,
         tocCallback: (tocMarkdown, tocArray, tocHtml) => {
-            pageOption.toc = tocHtml;
+            options.toc = tocHtml;
         }
     });
-    pageOption.content = md.render(pageOption.content);
-    return pageOption;
+    options.content = md.render(options.content);
+    return options;
 }
 
-function writePage(root, pageOption) {
-    const pageContent = pageOption.templates.index(pageOption);
+function writePage(root, options) {
+    const pageContent = options.templates.index(options);
     let relativePath = root;
     if (relativePath === '/') {
         relativePath = './';
@@ -195,31 +196,31 @@ function writePage(root, pageOption) {
     } else {
         relativePath = relativePath.substr(0, relativePath.length - 3) + '.html';
     }
-    fs.outputFileSync(path.resolve(process.cwd(), pageOption.output_dir, relativePath), pageContent);
+    fs.outputFileSync(path.resolve(process.cwd(), options.output_dir, relativePath), pageContent);
 }
 
-function makeCurrentPath(root, pageOption) {
-    pageOption.current_path = root;
-    return pageOption;
+function makeCurrentPath(root, options) {
+    options.current_path = root;
+    return options;
 }
 
-function makeRelativeRootPath(root, pageOption) {
+function makeRelativeRootPath(root, options) {
     if (root === '/') {
-        pageOption.relative_root_path = './';
+        options.relative_root_path = './';
     } else {
         const pathArr = root.split('/');
-        pageOption.relative_root_path = _.repeat('../', pathArr.length - 1);
+        options.relative_root_path = _.repeat('../', pathArr.length - 1);
     }
-    return pageOption;
+    return options;
 }
 
-function createPage(root, pageOption) {
-    pageOption = makeCurrentPath(root, pageOption);
-    pageOption = makeRelativeRootPath(root, pageOption);
-    pageOption = makeContent(root, pageOption);
-    pageOption = createPageTitle(root, pageOption);
-    pageOption = makeChapterList(root, pageOption);
-    pageOption = markdownRender(root, pageOption);
-    writePage(root, pageOption);
+function createPage(root, options) {
+    options = makeCurrentPath(root, options);
+    options = makeRelativeRootPath(root, options);
+    options = makeContent(root, options);
+    options = createPageTitle(root, options);
+    options = makeChapterList(root, options);
+    options = markdownRender(root, options);
+    writePage(root, options);
 }
 exports.createPage = createPage;
