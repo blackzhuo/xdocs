@@ -1,6 +1,6 @@
 'use strict';
 const log = require('./log');
-const createPage = require('./create').createPage;
+const createPage = require('./createPage').createPage;
 
 let makePage = {
 	init: function(options){

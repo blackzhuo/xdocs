@@ -13,9 +13,9 @@ let xdocs = {
         log.success('[XDOCS] build start');
         options = getConfig.init(options);
         options = filesOpt.init(options);
-        options = filesOpt.template(options);
-        options = filesOpt.clean(options);
         options = filesOpt.theme(options);
+        options = filesOpt.clean(options);
+        options = filesOpt.sources(options);
         options = makePosts.init(options);
         options = makePage.init(options);
         log.success('[XDOCS] build end');

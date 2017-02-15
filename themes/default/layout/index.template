@@ -7,7 +7,7 @@
     <meta name="keywords" content="<%= page_title %>">
     <meta name="description" content="<%= page_title %>">
     <meta name="author" content="<%= author %>">
-    <link rel="icon" href="./favicon.ico">
+    <link rel="icon" href="<%= relative_root_path %>favicon.ico">
     <title><%= current_path === '/' ? '' : page_title + ' | ' %><%= name %></title>
     <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="<%= relative_root_path %>src/css/index.css">
@@ -17,20 +17,27 @@
       <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
   </head>
-
   <body>
-
-    <div class="blog-masthead">
+    <nav class="blog-masthead navbar navbar-inverse navbar-fixed-top">
       <div class="container">
-        <nav class="blog-nav">
-          <a class="blog-nav-item active" href="<%= relative_root_path %>index.html">
-            <%= name %>
-          </a>
-        </nav>
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="javascript:;"><%= name %></a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="<%= current_path === 'about.md' ? '' : 'active' %>"><a href="<%= relative_root_path %>index.html">Home</a></li>
+            <li class="<%= current_path === 'about.md' ? 'active' : '' %>"><a href="<%= relative_root_path %>about.html">About</a></li>
+          </ul>
+        </div>
       </div>
-    </div>
-
-    <div class="container">
+    </nav>
+    <div class="container blog-container">
       <div class="blog-header">
         <h1 class="blog-title"><%= page_title %></h1>
         <p class="lead blog-description"></p>

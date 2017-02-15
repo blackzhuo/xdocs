@@ -18,15 +18,15 @@ let filesOpt = {
             fs.mkdirSync(goalDirPath);
         }
         let isConfigExists;
-        let ph = path.resolve(process.cwd(), 'source/init.md');
+        let about = path.resolve(process.cwd(), 'source/about.md');
         try {
-            fs.accessSync(ph);
+            fs.accessSync(about);
             isConfigExists = true;
         } catch (e) {
             isConfigExists = false;
         }
         if (!isConfigExists) {
-            fs.writeFileSync(ph, `test`, 'utf8');
+            fs.writeFileSync(about, `# about`, 'utf8');
         }
         return options;
     },
@@ -34,7 +34,7 @@ let filesOpt = {
         fs.removeSync(path.resolve(process.cwd(), options.output_dir));
         return options;
     },
-    theme: function(options) {
+    sources: function(options) {
         fs.copySync(path.resolve(process.cwd(), 'themes', 'default'), path.resolve(process.cwd(), options.output_dir), {
             filter(file) {
                 return !/\.template$/.test(file);
@@ -47,10 +47,12 @@ let filesOpt = {
         }
         return options;
     },
-    template: function(options) {
+    theme: function(options) {
         let theme_src = path.resolve(__dirname, '../../themes', options.theme, `layout`);
         let theme_dest = path.resolve(process.cwd(), 'themes', options.theme);
-        fs.copySync(theme_src, theme_dest);
+        if (!fs.existsSync(path.resolve(process.cwd(), 'themes', options.theme))) {
+            fs.copySync(theme_src, theme_dest);
+        }
         options = readTemplate(options, theme_dest);
         return options;
     }

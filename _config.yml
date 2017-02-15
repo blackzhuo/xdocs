@@ -1,5 +1,5 @@
-name: amos
-author: amos
+name: blog
+author: xdocs
 theme: default
 source_dir: source
 output_dir: output

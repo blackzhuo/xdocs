@@ -4,23 +4,30 @@ const path = require('path');
 const fs = require('fs-extra');
 const yaml = require('js-yaml');
 const walkSync = require('walk-sync');
-
 const _posts = '_posts.yml';
 
 function dealFile(prefix) {
     return function(file) {
-        const obj = {};
-        const key = file;
-        const value = path.basename(file);
+        let obj = {};
+        let key = file;
+        let value = file;
+        if (/(\.md)$/.test(value)) {
+            value = value.replace(/(\.md)$/, '');
+        }
+        if (/(\/)/.test(value)) {
+            value = value.replace(/(\/)/, '-');
+        }
         obj[key] = value;
         return obj;
     };
 }
-
 let makePosts = {
-    init: function(option){
+    init: function(option) {
         let docs = walkSync(path.resolve(process.cwd(), option.source_dir), {
             ignore: ['node_modules']
+        });
+        docs = docs.filter(function(doc) {
+            return !/^\./.test(doc) && !/(\/)$/.test(doc);
         });
         const docsArr = docs.map(dealFile(option.source_dir));
         try {
@@ -30,5 +37,4 @@ let makePosts = {
         return option;
     }
 };
-
 module.exports = makePosts;
