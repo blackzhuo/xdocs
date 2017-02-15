@@ -3,3 +3,11 @@ author: xdocs
 theme: default
 source_dir: source
 output_dir: output
+
+deploy:
+  - type: git
+    repo: https://github.com/wuzhuo0425/xdocs-blog.git
+    branch: gh-pages
+    message: commit
+    name: wuzhuo0425
+    email: wuzhuo0425@163.com

@@ -27,10 +27,8 @@ const argv = require('yargs').usage('Usage: xdocs [Options]').option('server', {
     describe: 'xdocs help',
     type: 'boolean'
 }).help('help').example('xdocs').example('xdocs -s').example('xdocs -v').argv;
-
 argv.build && xdocs.build(argv);
 argv.clean && xdocs.clean(argv);
+argv.version && xdocs.version(argv);
 argv.deploy && xdocs.deploy(argv);
 argv.server && xdocs.server(argv);
-argv.version && xdocs.version(argv);
-1 &&  xdocs.build(argv);
