@@ -3,37 +3,37 @@ const log = require('./log');
 const path = require('path');
 const fs = require('fs-extra');
 const spawn = require('cross-spawn');
-// stream
+const util = require('util');
+// stream info
 var Transform = require('stream').Transform;
 
-function CacheStream() {
+function StreamInfo() {
     Transform.call(this);
-    this._cache = [];
+    this._info = [];
 }
-require('util').inherits(CacheStream, Transform);
-CacheStream.prototype._transform = function(chunk, enc, callback) {
+util.inherits(StreamInfo, Transform);
+StreamInfo.prototype._transform = function(chunk, enc, callback) {
     var buf = chunk instanceof Buffer ? chunk : new Buffer(chunk, enc);
-    this._cache.push(buf);
+    this._info.push(buf);
     this.push(buf);
     callback();
+}
+StreamInfo.prototype.destroy = function() {
+    this._info.length = 0;
 };
-CacheStream.prototype.destroy = function() {
-    this._cache.length = 0;
+StreamInfo.prototype.getCache = function() {
+    return Buffer.concat(this._info);
 };
-CacheStream.prototype.getCache = function() {
-    return Buffer.concat(this._cache);
-};
-// git
+// git opt
 let deployFunc = {
     init: function(options) {
         let args = options.deploy[0];
-        let baseDir = path.resolve(process.cwd());
-        let deployDir = path.join(baseDir, '.deploy_git');
+        let deployDir = path.join(process.cwd(), '.deploy_git');
         let publicDir = path.resolve(process.cwd(), options.output_dir);
         let message = args.msg || args.message || 'update';
         let repoInfo = {
             url: args.repo || args.repository,
-            branch: args.branch || data.branch || 'master'
+            branch: args.branch || 'master'
         };
         if (!args.repo && !args.repository) {
             log.error('please check _config.yml.');
@@ -50,8 +50,8 @@ let deployFunc = {
                 cwd: deployDir
             });
             var encoding = 'utf8';
-            var stderrCache = new CacheStream();
-            var stdoutCache = new CacheStream();
+            var stderrCache = new StreamInfo();
+            var stdoutCache = new StreamInfo();
             if (task.stdout) {
                 var stdout = task.stdout.pipe(stdoutCache);
                 stdout.pipe(process.stdout);
@@ -62,9 +62,7 @@ let deployFunc = {
             }
             task.on('close', function(code) {
                 if (code) {
-                    var e = new Error(getCache(stderrCache, encoding));
-                    e.code = code;
-                    return;
+                    getCache(stderrCache, encoding);
                 }
                 getCache(stdoutCache, encoding);
             });
@@ -72,7 +70,6 @@ let deployFunc = {
             function getCache(stream, encoding) {
                 var buf = stream.getCache();
                 stream.destroy();
-                console.log(buf.toString(encoding));
             }
         }
 
@@ -84,35 +81,43 @@ let deployFunc = {
             git('init');
             userName && git('config', 'user.name', userName);
             userEmail && git('config', 'user.email', userEmail);
-            git('add', '-A');
-            git('commit', '-m', 'First commit');
+            setTimeout(function() {
+                git('add', '-A');
+            }, 1000);
+            setTimeout(function() {
+                git('commit', '-m', 'First commit');
+            }, 2000);
         }
 
-        function push(repo) {
-            git('add', '-A');
-            git('commit', '-m', message);
-            git('push', '-u', repo.url, 'HEAD:' + repo.branch, '--force');
+        function push() {
+            setTimeout(function() {
+                git('add', '-A');
+            }, 1000);
+            setTimeout(function() {
+                git('commit', '-m', message);
+            }, 2000);
+            setTimeout(function() {
+                git('push', '-u', repoInfo.url, 'HEAD:' + repoInfo.branch, '--force');
+            }, 3000);
         }
         if (!fs.existsSync(deployDir)) {
             setup();
+            try {
+                fs.emptydirSync(deployDir);
+            } catch (ex) {}
+            fs.copySync(publicDir, deployDir);
+            setTimeout(function() {
+                push();
+            }, 4000);
+        } else {
+            try {
+                fs.emptydirSync(deployDir);
+            } catch (ex) {}
+            fs.copySync(publicDir, deployDir);
+            setTimeout(function() {
+                push();
+            }, 4000);
         }
-        fs.emptydirSync(deployDir);
-
-        let indexLock;
-        let lockPath = path.resolve(deployDir, './.git/index.lock');
-        try {
-            fs.accessSync(lockPath);
-            indexLock = true;
-        } catch (e) {
-            indexLock = false;
-        }
-        if(indexLock){
-          fs.removeSync(lockPath);  
-        }
-        fs.copySync(publicDir, deployDir);
-        setTimeout(function() {
-            push(repoInfo);
-        }, 3000);
     }
 };
 module.exports = deployFunc;

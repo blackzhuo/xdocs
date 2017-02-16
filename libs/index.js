@@ -29,10 +29,9 @@ let xdocs = {
         process.exit(0);
     },
     deploy: function(options) {
-        log.success('[XDOCS] deploy start');
+        log.success('[XDOCS] deploying...');
         options = getConfig.init(options);
         deployFunc.init(options);
-        log.success('[XDOCS] deploy end');
     },
     server: function(options) {
         let port = 8998;
