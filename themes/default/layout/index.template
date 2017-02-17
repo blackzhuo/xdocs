@@ -58,7 +58,7 @@
         © 2017
         <a href="<%= relative_root_path %>index.html" title="<%= author %>"><%= author %></a>
         Build by
-        <a href="https://github.com/wuzhuo0425/xdocs" target="_blank">xdocs</a>
+        <a href="https://github.com/blackzhuo/xdocs" target="_blank">xdocs</a>
       </p>
     </footer>
     <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
