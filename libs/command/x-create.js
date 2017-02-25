@@ -2,7 +2,7 @@
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs-extra');
-const log = require('./log');
+const log = require('./x-log');
 const hljs = require('highlight.js');
 const markdownIt = require('markdown-it');
 
@@ -21,8 +21,11 @@ function createPostsList(root, options) {
     }
     let str = '<ul class="list-group">';
     let current_level = 0;
-    chapterArr.forEach(function(c, i) {
-        const chapterPathOrigin = Object.keys(c)[0];
+    chapterArr.sort(function(item1, item2) {
+        return new Date(item1[Object.keys(item1)[0]].date) < new Date(item2[Object.keys(item2)[0]].date)
+    });
+    chapterArr.forEach((item, index) => {
+        const chapterPathOrigin = Object.keys(item)[0];
         let chapterPath = chapterPathOrigin;
         if (chapterPath.substr(-3) === '.md') {
             // 处理index.md
@@ -35,7 +38,7 @@ function createPostsList(root, options) {
         // about不进入列表
         if (chapterPath !== 'about.html') {
             str += '<li class="list-group-item">';
-            str += '<a href="' + options.relative_root_path + chapterPath + '">' + c[Object.keys(c)[0]] + '</a>';
+            str += '<a href="' + options.relative_root_path + chapterPath + '">' + item[Object.keys(item)[0]].name + '</a>';
             str += '</li>';
         }
     });
@@ -44,10 +47,10 @@ function createPostsList(root, options) {
     return options;
 }
 
-function createPageTitle(root, options) {
+function createTitle(root, options) {
     const position = getPos(root, options);
     try {
-        options.page_title = options.posts[position][root] || options.name;
+        options.page_title = options.posts[position][root].name || options.name;
     } catch (ex) {
         options.page_title = options.name;
     }
@@ -58,6 +61,16 @@ function createContent(root, options) {
     if (root[root.length - 1] !== '/') {
         const filePath = path.resolve(process.cwd(), options.source_dir, root);
         options.content = fs.readFileSync(filePath, 'utf8');
+        let pageInfo = '';
+        if (options.content.includes('---')) {
+            pageInfo = options.content.split('---')[0];
+            options.content = options.content.split('---')[1];
+        }
+        if (pageInfo) {
+            pageInfo = (new Function("return " + pageInfo))();
+            const position = getPos(root, options);
+            _.assign(options.posts[position][root], pageInfo);
+        }
         return options;
     }
     options.content = '';
@@ -83,7 +96,7 @@ function createMarkdown(root, options) {
     const md = markdownIt({
         html: true,
         linkify: true,
-        highlight: function(str, lang) {
+        highlight: (str, lang) => {
             if (lang && hljs.getLanguage(lang)) {
                 try {
                     return hljs.highlight(lang, str).value;
@@ -112,18 +125,20 @@ function renderPage(root, options) {
         }
         relativePath = outputDoc + '.html';
     }
+    log.info(path.resolve(process.cwd(), options.output_dir, relativePath));
     fs.outputFileSync(path.resolve(process.cwd(), options.output_dir, relativePath), pageContent);
     return options;
 }
-
-function createPage(root, options) {
-    options = getCurrentPath(root, options);
-    options = getRelativeRootPath(root, options);
-    options = createPostsList(root, options);
-    options = createPageTitle(root, options);
-    options = createContent(root, options);
-    options = createMarkdown(root, options);
-    options = renderPage(root, options);
-    return options;
+let create = {
+    init(root, options) {
+        options = getCurrentPath(root.path, options);
+        options = getRelativeRootPath(root.path, options);
+        options = createContent(root.path, options);
+        options = createTitle(root.path, options);
+        options = createMarkdown(root.path, options);
+        options = createPostsList(root.path, options);
+        options = renderPage(root.path, options);
+        return options;
+    }
 }
-exports.createPage = createPage;
+exports.create = create;

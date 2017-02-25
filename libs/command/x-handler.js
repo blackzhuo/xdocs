@@ -2,7 +2,8 @@ const fs = require('fs-extra');
 const path = require('path');
 const _ = require('lodash');
 const walkSync = require('walk-sync');
-const log = require('./log');
+const log = require('./x-log');
+const utils = require('./x-utils');
 
 function readTemplate(options, dest) {
     const pageTemplate = fs.readFileSync(path.resolve(dest, 'index.template'), 'utf8');
@@ -11,12 +12,16 @@ function readTemplate(options, dest) {
     options.templates.index = _.template(options.templates.index);
     return options;
 }
+
+function checkAndCreateDir() {
+    let goalDirPath = path.resolve(process.cwd(), 'source')
+    if (fs.existsSync(goalDirPath)) {} else {
+        fs.mkdirSync(goalDirPath);
+    }
+}
 let filesOpt = {
-    init: function(options) {
-        let goalDirPath = path.resolve(process.cwd(), 'source')
-        if (fs.existsSync(goalDirPath)) {} else {
-            fs.mkdirSync(goalDirPath);
-        }
+    init(options) {
+        checkAndCreateDir();
         let isConfigExists;
         let about = path.resolve(process.cwd(), 'source/about.md');
         try {
@@ -30,11 +35,40 @@ let filesOpt = {
         }
         return options;
     },
-    clean: function(options) {
+    clean(options) {
         fs.removeSync(path.resolve(process.cwd(), options.output_dir));
         return options;
     },
-    sources: function(options) {
+    create(options) {
+        if (options.new) {
+            checkAndCreateDir();
+            let isConfigExists;
+            let newInfo = path.resolve(process.cwd(), `source/${options.new}.md`);
+            try {
+                fs.accessSync(newInfo);
+                isConfigExists = true;
+            } catch (e) {
+                isConfigExists = false;
+            }
+            if (!isConfigExists) {
+                let timeNow = ``;
+                let tpl = `{
+    title: "${options.new}",
+    date: "${utils.formatDateNow()}"
+}
+---
+`;
+                fs.writeFileSync(newInfo, tpl, 'utf8');
+                log.info(newInfo);
+            } else {
+                log.error('该文件已经存在了');
+            }
+        } else {
+            log.error('请输入文件名字，使用xdocs -n xxx');
+        }
+        return options;
+    },
+    sources(options) {
         fs.copySync(path.resolve(process.cwd(), 'themes', 'default'), path.resolve(process.cwd(), options.output_dir), {
             filter(file) {
                 return !/\.template$/.test(file);
@@ -47,7 +81,7 @@ let filesOpt = {
         }
         return options;
     },
-    theme: function(options) {
+    theme(options) {
         let theme_src = path.resolve(__dirname, '../../themes', options.theme, `layout`);
         let theme_dest = path.resolve(process.cwd(), 'themes', options.theme);
         if (!fs.existsSync(path.resolve(process.cwd(), 'themes', options.theme))) {
