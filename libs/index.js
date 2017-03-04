@@ -27,7 +27,7 @@ let xdocs = {
         log.start('clean');
         log.success('[XDOCS] clean start');
         options = config.init(options);
-        options = handler.clean(options);
+        handler.clean(options);
         log.success('[XDOCS] clean end');
         log.end('clean');
         process.exit(0);
@@ -42,7 +42,7 @@ let xdocs = {
         log.start('create');
         log.success('[XDOCS] create start');
         options = config.init(options);
-        options = handler.create(options);
+        handler.create(options);
         log.success('[XDOCS] create end');
         log.end('create');
         process.exit(0);
@@ -53,12 +53,13 @@ let xdocs = {
         let app = connect().use(connect.logger('tiny')).use(connect.query()).use(connect.bodyParser()).use(connect['static'](path.resolve(process.cwd(), options.output_dir), {
             hidden: true,
             redirect: true,
-            index: 'null'
+            index: 'index.html'
         })).use(connect.directory(path.resolve(process.cwd(), options.output_dir)));
         let server = http.createServer(app);
         server.listen(port);
         server.on('listening', (e) => {
-            return log.success('[XDOCS] server start port ' + port + '.');
+            log.success(`[XDOCS] server start port ${port}.`);
+            return log.info(`please visit http://127.0.0.1:${port}`);
         });
     },
     version(options) {

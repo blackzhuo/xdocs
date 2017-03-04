@@ -1,12 +1,11 @@
 'use strict';
-const _ = require('lodash');
 const path = require('path');
 const fs = require('fs-extra');
 const log = require('./x-log');
 const hljs = require('highlight.js');
 const markdownIt = require('markdown-it');
 
-function getPos(root, options) {
+function postPosition(root, options) {
     for (let i = 0; i < options.posts.length; i += 1) {
         if (options.posts[i][root]) {
             return i;
@@ -15,40 +14,45 @@ function getPos(root, options) {
 }
 
 function createPostsList(root, options) {
-    let chapterArr = options.posts;
+    let pa = options.posts;
     if (!options.posts) {
-        chapterArr = [];
+        pa = [];
     }
-    let str = '<ul class="list-group">';
-    let current_level = 0;
-    chapterArr.sort(function(item1, item2) {
+    let str = [];
+    pa.sort(function(item1, item2) {
         return new Date(item1[Object.keys(item1)[0]].date) < new Date(item2[Object.keys(item2)[0]].date)
     });
-    chapterArr.forEach((item, index) => {
+    pa.forEach((item, index) => {
         const chapterPathOrigin = Object.keys(item)[0];
         let chapterPath = chapterPathOrigin;
         if (chapterPath.substr(-3) === '.md') {
             // 处理index.md
             if (chapterPath === 'index.md') {
-                chapterPath = chapterPath.substr(0, chapterPath.length - 3) + '-me.html';
+                chapterPath = `${chapterPath.substr(0, chapterPath.length - 3)}-me.html`;
             } else {
-                chapterPath = chapterPath.substr(0, chapterPath.length - 3) + '.html';
+                chapterPath = `${chapterPath.substr(0, chapterPath.length - 3)}.html`;
             }
         }
         // about不进入列表
         if (chapterPath !== 'about.html') {
-            str += '<li class="list-group-item">';
-            str += '<a href="' + options.relative_root_path + chapterPath + '">' + item[Object.keys(item)[0]].name + '</a>';
-            str += '</li>';
+            let listTmpl = `<div class="thumbnail">
+                                <a href="${options.relative_root_path + chapterPath}" >
+                                    <img src="${options.relative_root_path}src/image/default.jpeg" alt="${item[Object.keys(item)[0]].name}">
+                                    <div class="caption">
+                                        <h3 class="ellipsis">${item[Object.keys(item)[0]].name}</h3>
+                                        <p class="ellipsis">${item[Object.keys(item)[0]].date}</p>
+                                    </div>
+                                </a>    
+                            </div>`;
+            str.push(listTmpl);
         }
     });
-    str += '</ul>';
-    options.chapterList = str;
+    options.chapterList = str.join('');
     return options;
 }
 
 function createTitle(root, options) {
-    const position = getPos(root, options);
+    const position = postPosition(root, options);
     try {
         options.page_title = options.posts[position][root].name || options.name;
     } catch (ex) {
@@ -62,14 +66,14 @@ function createContent(root, options) {
         const filePath = path.resolve(process.cwd(), options.source_dir, root);
         options.content = fs.readFileSync(filePath, 'utf8');
         let pageInfo = '';
-        if (options.content.includes('---')) {
-            pageInfo = options.content.split('---')[0];
-            options.content = options.content.split('---')[1];
+        if (options.content.includes('>>>>>>>>>>')) {
+            pageInfo = options.content.split('>>>>>>>>>>')[0];
+            options.content = options.content.split('>>>>>>>>>>')[1];
         }
         if (pageInfo) {
             pageInfo = (new Function("return " + pageInfo))();
-            const position = getPos(root, options);
-            _.assign(options.posts[position][root], pageInfo);
+            const position = postPosition(root, options);
+            Object.assign(options.posts[position][root], pageInfo);
         }
         return options;
     }
@@ -77,7 +81,7 @@ function createContent(root, options) {
     return options;
 }
 
-function getCurrentPath(root, options) {
+function setCurrentPath(root, options) {
     options.current_path = root;
     return options;
 }
@@ -86,8 +90,8 @@ function getRelativeRootPath(root, options) {
     if (root === '/') {
         options.relative_root_path = './';
     } else {
-        const pathArr = root.split('/');
-        options.relative_root_path = _.repeat('../', pathArr.length - 1);
+        const pp = root.split('/');
+        options.relative_root_path = '../'.repeat(pp.length - 1);
     }
     return options;
 }
@@ -99,10 +103,12 @@ function createMarkdown(root, options) {
         highlight: (str, lang) => {
             if (lang && hljs.getLanguage(lang)) {
                 try {
-                    return hljs.highlight(lang, str).value;
-                } catch (e) {}
+                    return '<pre class="hljs"><code>' + hljs.highlight(lang, str, true).value + '</code></pre>';
+                } catch (e) {
+                    throw e;
+                }
             }
-            return md.utils.escapeHtml(str);
+            return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
         }
     });
     options.content = md.render(options.content);
@@ -131,7 +137,7 @@ function renderPage(root, options) {
 }
 let create = {
     init(root, options) {
-        options = getCurrentPath(root.path, options);
+        options = setCurrentPath(root.path, options);
         options = getRelativeRootPath(root.path, options);
         options = createContent(root.path, options);
         options = createTitle(root.path, options);

@@ -7,9 +7,9 @@ const utils = require('./x-utils');
 
 function readTemplate(options, dest) {
     const pageTemplate = fs.readFileSync(path.resolve(dest, 'index.template'), 'utf8');
-    options.templates = {};
-    options.templates['index'] = pageTemplate;
-    options.templates.index = _.template(options.templates.index);
+    options.templates = {
+        index: _.template(pageTemplate)
+    };
     return options;
 }
 
@@ -56,8 +56,7 @@ let filesOpt = {
     title: "${options.new}",
     date: "${utils.formatDateNow()}"
 }
----
-`;
+---`;
                 fs.writeFileSync(newInfo, tpl, 'utf8');
                 log.info(newInfo);
             } else {
@@ -84,7 +83,7 @@ let filesOpt = {
     theme(options) {
         let theme_src = path.resolve(__dirname, '../../themes', options.theme, `layout`);
         let theme_dest = path.resolve(process.cwd(), 'themes', options.theme);
-        if (!fs.existsSync(path.resolve(process.cwd(), 'themes', options.theme))) {
+        if (!fs.existsSync(theme_dest)) {
             fs.copySync(theme_src, theme_dest);
         }
         options = readTemplate(options, theme_dest);

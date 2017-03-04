@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
 const yaml = require('js-yaml');
@@ -13,7 +12,7 @@ let getConfig = {
             config = yaml.safeLoad(fs.readFileSync(path.resolve(__dirname, '../../', _config), 'utf8'));
             fs.copySync(path.resolve(__dirname, '../../', _config), path.resolve(process.cwd(), _config));
         }
-        _.assign(options, config);
+        Object.assign(options, config);
         return options;
     }
 };
