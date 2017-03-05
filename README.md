@@ -1,5 +1,5 @@
 ### xdocs
-xdocs can help generate blog posts
+Xdocs can help you build blogs easily
 
 ### setup
 npm install xdocs -g
