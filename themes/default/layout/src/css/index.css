@@ -105,6 +105,8 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
     float: left;
     margin-left: 10px;
     width: 300px;
+    height: 343px;
+    overflow: hidden;
 }
 .thumbnail a:hover, .thumbnail a:focus{
     text-decoration: none;
@@ -181,6 +183,13 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
 }
 .blog-footer p:last-child {
     margin-bottom: 0;
+}
+
+.clearfix{
+    clear: both;
+    zoom: 1;
+    overflow: hidden;
+    display: block;
 }
 
 /*

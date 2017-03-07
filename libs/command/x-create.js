@@ -36,8 +36,8 @@ function createPostsList(root, options) {
         // about不进入列表
         if (chapterPath !== 'about.html') {
             let listTmpl = `<div class="thumbnail">
-                                <a href="${options.relative_root_path + chapterPath}" >
-                                    <img src="${options.relative_root_path}src/image/default.jpeg" alt="${item[Object.keys(item)[0]].name}">
+                                <a class="clearfix" href="${options.relative_root_path + chapterPath}" >
+                                    <img width="290" height="244" src="${options.relative_root_path}src/image/default.jpeg" alt="${item[Object.keys(item)[0]].name}">
                                     <div class="caption">
                                         <h3 class="ellipsis">${item[Object.keys(item)[0]].name}</h3>
                                         <p class="ellipsis">${item[Object.keys(item)[0]].date}</p>

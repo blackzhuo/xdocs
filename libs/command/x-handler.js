@@ -31,7 +31,12 @@ let filesOpt = {
             isConfigExists = false;
         }
         if (!isConfigExists) {
-            fs.writeFileSync(about, `# about`, 'utf8');
+            let tpl = `{
+    title: "about",
+    date: "${utils.formatDateNow()}"
+}
+>>>>>>>>>>`;
+            fs.writeFileSync(about, tpl, 'utf8');
         }
         return options;
     },
@@ -56,7 +61,7 @@ let filesOpt = {
     title: "${options.new}",
     date: "${utils.formatDateNow()}"
 }
----`;
+>>>>>>>>>>`;
                 fs.writeFileSync(newInfo, tpl, 'utf8');
                 log.info(newInfo);
             } else {
