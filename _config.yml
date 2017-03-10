@@ -1,5 +1,9 @@
-name: blog
-author: xdocs
+name: Blogs
+description: a blogs for me
+author: amos
+twitter: https://twitter.com/xxx
+facebook: https://facebook.com/xxx
+github: https://github.com/xxx
 theme: default
 source_dir: source
 output_dir: output
@@ -9,5 +13,11 @@ deploy:
     repo: https://github.com/blackzhuo/xdocs-blog.git
     branch: gh-pages
     message: commit
-    name: wuzhuo
+    name: blackzhuo
+    email: wuzhuo0425@163.com
+  - type: git
+    repo: https://git.coding.net/wuzhuo0425/xdocs-blog.git
+    branch: coding-pages
+    message: commit
+    name: wuzhuo0425
     email: wuzhuo0425@163.com

@@ -1,1 +1,0 @@
-### xdoc's default theme

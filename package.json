@@ -19,6 +19,7 @@
     "documents"
   ],
   "dependencies": {
+    "co": "^4.6.0",
     "colors": "^1.1.2",
     "connect": "^2.7.11",
     "cross-spawn": "^4.0.0",

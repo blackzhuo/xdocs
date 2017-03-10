@@ -35,15 +35,18 @@ function createPostsList(root, options) {
         }
         // about不进入列表
         if (chapterPath !== 'about.html') {
-            let listTmpl = `<div class="thumbnail">
-                                <a class="clearfix" href="${options.relative_root_path + chapterPath}" >
-                                    <img width="290" height="244" src="${options.relative_root_path}src/image/default.jpeg" alt="${item[Object.keys(item)[0]].name}">
-                                    <div class="caption">
-                                        <h3 class="ellipsis">${item[Object.keys(item)[0]].name}</h3>
-                                        <p class="ellipsis">${item[Object.keys(item)[0]].date}</p>
-                                    </div>
-                                </a>    
-                            </div>`;
+            let listTmpl = `<div class="post-preview">
+                                <a href="${options.relative_root_path + chapterPath}">
+                                    <h2 class="post-title">
+                                        ${item[Object.keys(item)[0]].name}
+                                    </h2>
+                                    <h3 class="post-subtitle">
+                                        ${item[Object.keys(item)[0]].name}
+                                    </h3>
+                                </a>
+                                <p class="post-meta">Posted by <a href="${options.relative_root_path}index.html">${options.author}</a> ${item[Object.keys(item)[0]].date}</p>
+                            </div>
+                            <hr>`;
             str.push(listTmpl);
         }
     });
