@@ -5,7 +5,7 @@ const log = {
         console.log(colors.green(info));
     },
     error(info) {
-        console.log(colors.red(info));
+        console.log(colors.red(JSON.stringify(info)));
     },
     info(info) {
         console.log(colors.gray(info));

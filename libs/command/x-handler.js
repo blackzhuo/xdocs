@@ -2,20 +2,21 @@ const fs = require('fs-extra');
 const path = require('path');
 const _ = require('lodash');
 const walkSync = require('walk-sync');
+const Mustache = require('mustache');
 const log = require('./x-log');
 const utils = require('./x-utils');
 
 function readTemplate(options, dest) {
-    const pageTemplate = fs.readFileSync(path.resolve(dest, 'index.template'), 'utf8');
+    const pageTemplate = fs.readFileSync(path.resolve(dest, 'index.string'), 'utf8');
     options.templates = {
-        index: _.template(pageTemplate)
+        index: pageTemplate
     };
     return options;
 }
 
 function checkAndCreateDir() {
     let goalDirPath = path.resolve(process.cwd(), 'source')
-    if (fs.existsSync(goalDirPath)) {} else {
+    if (fs.existsSync(goalDirPath)) { } else {
         fs.mkdirSync(goalDirPath);
     }
 }
@@ -31,11 +32,15 @@ let filesOpt = {
             isConfigExists = false;
         }
         if (!isConfigExists) {
-            let tpl = `{
-    title: "about",
-    date: "${utils.formatDateNow()}"
-}
->>>>>>>>>>`;
+            let head = fs.readFileSync(path.join(__dirname, './tmpl/head.string'), 'utf-8');
+            let tpl = Mustache.render(head, {
+                data: {
+                    title: 'about',
+                    author: options.author,
+                    site: options.site,
+                    date: utils.formatDateNow()
+                }
+            });
             fs.writeFileSync(about, tpl, 'utf8');
         }
         return options;
@@ -56,12 +61,15 @@ let filesOpt = {
                 isConfigExists = false;
             }
             if (!isConfigExists) {
-                let timeNow = ``;
-                let tpl = `{
-    title: "${options.new}",
-    date: "${utils.formatDateNow()}"
-}
->>>>>>>>>>`;
+                let head = fs.readFileSync(path.join(__dirname, './tmpl/head.string'), 'utf-8');
+                let tpl = Mustache.render(head, {
+                    data: {
+                        title: options.new,
+                        author: options.author,
+                        site: options.site,
+                        date: utils.formatDateNow()
+                    }
+                });
                 fs.writeFileSync(newInfo, tpl, 'utf8');
                 log.info(newInfo);
             } else {

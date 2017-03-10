@@ -13,7 +13,6 @@ let makePosts = {
             return !/^\./.test(doc) && !/(\/)$/.test(doc);
         });
         const docsArr = docs.map((file) => {
-            let obj = {};
             let key = file;
             let value = file;
             if (/(\.md)$/.test(value)) {
@@ -22,7 +21,7 @@ let makePosts = {
             if (/(\/)/.test(value)) {
                 value = value.replace(/(\/)/, '-');
             }
-            obj[key] = {
+            let obj = {
                 path: key,
                 name: value,
                 date: ''

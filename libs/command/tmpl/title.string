@@ -1,0 +1,12 @@
+<div class="post-preview">
+    <a href="{{path}}">
+        <h2 class="post-title">
+            {{name}}
+        </h2>
+        <h3 class="post-subtitle">
+            {{{subscript}}}
+        </h3>
+    </a>
+    <p class="post-meta">Posted by <a href="{{site}}">{{author}}</a>{{date}}</p>
+</div>
+<hr>

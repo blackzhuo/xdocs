@@ -1,0 +1,14 @@
+{{#data}}
+title: {{title}}
+keywords: {{title}}
+description: {{title}}
+author: {{author}}
+site: {{site}}
+date: {{date}}
+>>>>>>>>>>
+
+
+<!--description-->
+正文从这里开始~
+
+{{/data}}

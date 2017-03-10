@@ -2,12 +2,14 @@
 const path = require('path');
 const fs = require('fs-extra');
 const log = require('./x-log');
+const yaml = require('js-yaml');
+const Mustache = require('mustache');
 const hljs = require('highlight.js');
 const markdownIt = require('markdown-it');
 
 function postPosition(root, options) {
-    for (let i = 0; i < options.posts.length; i += 1) {
-        if (options.posts[i][root]) {
+    for (let i = 0; i < options.posts.length; i++) {
+        if (options.posts[i].path === root) {
             return i;
         }
     }
@@ -19,11 +21,15 @@ function createPostsList(root, options) {
         pa = [];
     }
     let str = [];
-    pa.sort(function(item1, item2) {
-        return new Date(item1[Object.keys(item1)[0]].date) < new Date(item2[Object.keys(item2)[0]].date)
-    });
     pa.forEach((item, index) => {
-        const chapterPathOrigin = Object.keys(item)[0];
+        let relative_root_path = '';
+        if (item.path === '/') {
+            relative_root_path = './';
+        } else {
+            const pp = item.path.split('/');
+            relative_root_path = '../'.repeat(pp.length - 1);
+        }
+        const chapterPathOrigin = item.path;
         let chapterPath = chapterPathOrigin;
         if (chapterPath.substr(-3) === '.md') {
             // 处理index.md
@@ -33,20 +39,17 @@ function createPostsList(root, options) {
                 chapterPath = `${chapterPath.substr(0, chapterPath.length - 3)}.html`;
             }
         }
+        item.pagePath = relative_root_path + chapterPath;
         // about不进入列表
         if (chapterPath !== 'about.html') {
-            let listTmpl = `<div class="post-preview">
-                                <a href="${options.relative_root_path + chapterPath}">
-                                    <h2 class="post-title">
-                                        ${item[Object.keys(item)[0]].name}
-                                    </h2>
-                                    <h3 class="post-subtitle">
-                                        ${item[Object.keys(item)[0]].name}
-                                    </h3>
-                                </a>
-                                <p class="post-meta">Posted by <a href="${options.relative_root_path}index.html">${options.author}</a> ${item[Object.keys(item)[0]].date}</p>
-                            </div>
-                            <hr>`;
+            let listTmpl = Mustache.render(fs.readFileSync(path.resolve(__dirname, './tmpl/title.string'), 'utf8'), {
+                path: relative_root_path + chapterPath,
+                name: item.name,
+                subscript: item.subscript,
+                site: item.site,
+                author: item.author,
+                date: item.date
+            });
             str.push(listTmpl);
         }
     });
@@ -57,7 +60,7 @@ function createPostsList(root, options) {
 function createTitle(root, options) {
     const position = postPosition(root, options);
     try {
-        options.page_title = options.posts[position][root].name || options.name;
+        options.page_title = options.posts[position].name || options.name;
     } catch (ex) {
         options.page_title = options.name;
     }
@@ -69,14 +72,23 @@ function createContent(root, options) {
         const filePath = path.resolve(process.cwd(), options.source_dir, root);
         options.content = fs.readFileSync(filePath, 'utf8');
         let pageInfo = '';
+        let subscript = '';
         if (options.content.includes('>>>>>>>>>>')) {
             pageInfo = options.content.split('>>>>>>>>>>')[0];
             options.content = options.content.split('>>>>>>>>>>')[1];
+            subscript = options.content.split('<!--description-->')[0] || '';
         }
         if (pageInfo) {
-            pageInfo = (new Function("return " + pageInfo))();
+            pageInfo = yaml.safeLoad(pageInfo);
+            pageInfo.subscript = subscript;
             const position = postPosition(root, options);
-            Object.assign(options.posts[position][root], pageInfo);
+            Object.assign(options.posts[position], pageInfo);
+            if (options.posts[position].prev) {
+                options.prev = options.posts[position].prev;
+            }
+            if (options.posts[position].next) {
+                options.next = options.posts[position].next;
+            }
         }
         return options;
     }
@@ -84,8 +96,37 @@ function createContent(root, options) {
     return options;
 }
 
+function createPrevNext(root, options) {
+    options.posts.forEach((pageObj, index) => {
+        if (index === 0 && options.posts[1]) {
+            pageObj.next = {
+                name: options.posts[1].name,
+                path: options.posts[1].pagePath
+            }
+        } else if (index === options.posts.length - 1) {
+            pageObj.prev = {
+                name: options.posts[index - 1].name,
+                path: options.posts[index - 1].pagePath
+            }
+        } else {
+            pageObj.prev = {
+                name: options.posts[index - 1].name,
+                path: options.posts[index - 1].pagePath
+            }
+            pageObj.next = {
+                name: options.posts[index + 1].name,
+                path: options.posts[index + 1].pagePath
+            }
+        }
+    });
+    return options;
+}
+
 function setCurrentPath(root, options) {
     options.current_path = root;
+    if (options.current_path === '/') {
+        options.isIndex = true;
+    }
     return options;
 }
 
@@ -119,7 +160,7 @@ function createMarkdown(root, options) {
 }
 
 function renderPage(root, options) {
-    const pageContent = options.templates.index(options);
+    const pageContent = Mustache.render(options.templates.index, options);
     let relativePath = root;
     if (relativePath === '/') {
         relativePath = './';
@@ -147,6 +188,12 @@ let create = {
         options = createMarkdown(root.path, options);
         options = createPostsList(root.path, options);
         options = renderPage(root.path, options);
+        return options;
+    },
+    config(root, options) {
+        options = createPostsList(root.path, options);
+        options = createContent(root.path, options);
+        options = createPrevNext(root.path, options);
         return options;
     }
 }
