@@ -1,5 +1,5 @@
 <div class="post-preview">
-    <a href="{{path}}">
+    <a href="{{pagePath}}">
         <h2 class="post-title">
             {{name}}
         </h2>
