@@ -32,7 +32,6 @@ let deployFunc = {
                 log.info(countNum);
             }
             let deployTimer = setInterval(count, 500);
-            console.info(arg)
             const pushdone = function () {
                 clearInterval(deployTimer);
                 resolve('end');
