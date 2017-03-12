@@ -11,21 +11,16 @@ const SEP = '>>>>>>>>>>';
 const SEPD = '<!--description-->';
 
 let makePosts = {
-    renderList(options) {
-        // about不进入列表
-        let page = [];
-        options.posts.forEach((item, index) => {
-            if (item.chapterPath !== 'about.html') {
-                let listTmpl = Mustache.render(fs.readFileSync(path.resolve(__dirname, './tmpl/title.string'), 'utf8'), item);
-                page.push(listTmpl);
-            }
+    sortPage(options) {
+        options.posts.sort((item1, item2) => {
+            return (new Date(item1.date)) < (new Date(item2.date)) ? 1 : -1;
         });
-        options.chapterList = page.join('');
         return options;
     },
     createPrevNext(options) {
         let postCollection = [];
         let otherCollection = [];
+        let page = [];
         options.posts.forEach((item, index) => {
             if (item.chapterPath !== 'about.html') {
                 postCollection.push(item);
@@ -56,12 +51,18 @@ let makePosts = {
                     path: postCollection[index + 1].pagePath
                 }
             }
+
+            if (page.length < 10) {
+                let listTmpl = Mustache.render(fs.readFileSync(path.resolve(__dirname, './tmpl/title.string'), 'utf8'), item);
+                page.push(listTmpl);
+            }
         });
         postCollection = postCollection.concat(otherCollection);
         options.posts = postCollection;
+        options.chapterList = page.join('');
         return options;
     },
-    init(options) {
+    getPage(options) {
         let docs = walkSync(path.resolve(process.cwd(), options.source_dir), {
             ignore: ['node_modules']
         });
@@ -124,13 +125,11 @@ let makePosts = {
             return obj;
         });
         options.posts = docsArr;
-        options.posts.forEach((item, index) => {
-
-        });
-        options.posts.sort((item1, item2) => {
-            return (new Date(item1.date)) < (new Date(item2.date)) ? 1 : -1;
-        });
-        options = this.renderList(options);
+        return options;
+    },
+    init(options) {
+        options = this.getPage(options);
+        options = this.sortPage(options);
         options = this.createPrevNext(options);
         return options;
     }

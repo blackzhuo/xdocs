@@ -6,14 +6,6 @@ const Mustache = require('mustache');
 const log = require('./x-log');
 const utils = require('./x-utils');
 
-function readTemplate(options, dest) {
-    const pageTemplate = fs.readFileSync(path.resolve(dest, 'index.string'), 'utf8');
-    options.templates = {
-        index: pageTemplate
-    };
-    return options;
-}
-
 function checkAndCreateDir() {
     let goalDirPath = path.resolve(process.cwd(), 'source')
     if (fs.existsSync(goalDirPath)) { } else {
@@ -99,7 +91,10 @@ let filesOpt = {
         if (!fs.existsSync(theme_dest)) {
             fs.copySync(theme_src, theme_dest);
         }
-        options = readTemplate(options, theme_dest);
+        const pageTemplate = fs.readFileSync(path.resolve(theme_dest, 'index.string'), 'utf8');
+        options.templates = {
+            index: pageTemplate
+        };
         return options;
     }
 }
